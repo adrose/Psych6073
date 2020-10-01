@@ -1,0 +1,136 @@
+---
+title: "Equivalent Models"
+author: "Adon Rosen"
+date: 'Date: `r Sys.Date()`'
+output: pdf_document
+---
+  
+```{r, echo=F, message=F, warning=FALSE}
+library(knitr)
+opts_knit$set(root.dir='./')  #Don't combine this call with any other chunk -especially one that uses file paths.
+```
+
+
+<!-- Set the report-wide options, and point to the external code file. -->
+```{r set_options, echo=F, warning=FALSE}
+# cat("Working directory: ", getwd())
+report_render_start_time <- Sys.time()
+opts_chunk$set(
+  results    = 'show',
+  comment    = NA,
+  tidy       = FALSE,
+  fig.width  = 10,
+  fig.height = 6,
+  fig.path   = 'figure-png/'
+)
+# echoChunks <- FALSE
+options(width=80) #So the output is 50% wider than the default.
+read_chunk("./equivalentModels.R") #This allows knitr to call chunks tagged in the underlying *.R file.
+```
+
+```{r load-packages, echo=FALSE, results='show', message=FALSE, warning=FALSE}
+```
+
+
+The sas code below runs a path model in Calis. Calis is the SEM procedure in sas. I am using a correlation matrix to test a model path model; that is, the model has to fit the correlations. (However, we will not worry about fit in this exercise.) Following the arrows in the model draw the path model out, then construct an equivalent path model. Next, run the equivalent model in Calis to show that the two predicted covariance matrices are equal.  If the predicted covariance matrices are not equal the models are not equivalent. 
+
+After you find and an equivalent path model,  go to Dagittiy and verify that these two models are equivalent too, in the "non-linear world."  Make A the exposure and E the outcome in the model, and compare the two sets of testable implications.  You will see that they are equal.  
+
+Include in the writeup the equivalent model with its predicted covariances and testable implications.  
+
+data correl (type=corr);input A B C D E;
+cards;
+
+1.00 . . . .
+
+-.21 1.00 . . .
+
+-.18 0.56 1.00 . .
+
+-.19 0.65 0.50 1.00 .
+
+-.09 0.44 0.36 0.50 1.00
+
+;
+Title 'Model 1';
+
+/* pcorr gives you the predicted covariances */
+proc calis data=correl pcorr;
+Path
+a-->b,
+
+a-->c,
+
+b-->d,
+
+b-->e,
+
+c-->d,
+
+c-->e,
+
+d-->e;
+
+run;
+
+# Report original model values here
+
+Below will be the predicted covariance matrix as well as a SEM plot for the original model: 
+
+a-->b,
+
+a-->c,
+
+b-->d,
+
+b-->e,
+
+c-->d,
+
+c-->e,
+
+d-->e
+
+
+```{r declare-model-orig, echo=FALSE, results='show', message=FALSE, warning=FALSE}
+```
+
+## Report the testable implications via Daggity
+1. $A \perp D  \mid B,C$
+
+1. $A \perp E  \mid B,C$
+
+1. $B \perp C  \mid A$
+
+
+# Report equivalent model values here
+
+Below will be the predicted covariance matrix as well as a SEM plot for an equivalent model:
+
+a-->b,
+
+c-->a,
+
+b-->d,
+
+b-->e,
+
+c-->d,
+
+c-->e,
+
+d-->e
+
+
+```{r declare-model-equiv, echo=FALSE, results='show', message=FALSE, warning=FALSE}
+```
+
+### Report the testable implications via Daggity
+1. $A \perp D  \mid B,C$
+
+1. $A \perp E  \mid B,C$
+
+1. $B \perp C  \mid A$
+
+## Summary
+Here we decalred an equivalent model by changing the relationship between the A and C variables. In the original model the C variable was thought to be causing the observed variance in A; however, in the equivalent model this relationship is flipped. It can be observed in the predicted covariance matrices that this yields identical estimated covariances. Furthermore, the equivalence of these models is underscored by the testable implications that Daggity yields. These models are equivalent because reversing the relationship between A and C does not introduce any further residualization between any other downstream variables. FOr instance, had a path between C --> B been included in the orignal model, reversing the relationship between these two viarables would no longer have yielded an equivalent model because then a residualized C would be used to predict B.
